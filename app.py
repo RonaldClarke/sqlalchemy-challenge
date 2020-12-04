@@ -17,8 +17,13 @@ Station = Base.classes.station
 app = Flask(__name__)
 @app.route("/")
 def main():    
-    return "Welcome to my Home page!"
-    return "Routes: Precipitation, Stations, Temperatures"
+    f"Welcome to my SQLAlchemy Challenge API!<br/>"
+    f"Here are the Available Routes:<br/>"
+    f"/api/v1.0/precipitation<br/>"
+    f"/api/v1.0/stations<br/>"
+    f"/api/v1.0/tobs<br/>"
+    f"/api/v1.0/(INSERT START DATE: yyyy-mm-dd)<br/>"
+    f"/api/v1.0/(INSERT START DATE: yyyy-mm-dd)/(INSERT END DATE: yyyy-mm-dd)"
 @app.route("/api/v1.0/precipitation")
 def precipitation(): 
     session = Session(engine)
@@ -34,7 +39,7 @@ def precipitation():
 @app.route("/api/v1.0/stations")
 def stations():
     session = Session(engine)
-    stations = session.query(Measurement.station).group_by(Measurement.station).all())
+    stations = session.query(Measurement.station).group_by(Measurement.station).all()
     session.close()
     stns = [item[0] for item in stations]
     return jsonify(stns)
@@ -55,14 +60,33 @@ def start(start):
     session = Session(engine)
     results = session.query(Measurement.date, func.min(Measurement.tobs, func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date >= start).group_by(Measurement.date).all()
     session.close()
-start_list = []
-for date, min, avg, max in results:
-    start_dict = {}
-    start_dict["Date"] = date
-    start_dict["TMIN"] = min
-    start_dict["TAVG"] = avg
-    start_dict["TMAX"] = max
-    start_list.append(start_dict)
-return jsonify()
+    start_list = []
+    for date, min, avg, max in results:
+        start_dict = {}
+        start_dict["Date"] = date
+        start_dict["TMIN"] = min
+        start_dict["TAVG"] = avg
+        start_dict["TMAX"] = max
+        start_list.append(start_dict)
+    return jsonify(start_list)
+@app.route("/api/v1.0/<start>/<end>")
+def temp_start_end(start, end):
+    session = Session(engine)
+    results = session.query(Measurement.date, func.min(Measurement.tobs, func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date >= start).filter(Measurement.date <= end).group_by(Measurement.date).all()   
+    session.close()  
+    end_list = []
+    for date, min, avg, max in results:
+        end_dict = {}
+        end_dict["Date"] = date
+        end_dict["TMIN"] = min
+        end_dict["TAVG"] = avg
+        end_dict["TMAX"] = max
+        end_list.append(start_dict)    
+    return jsonify(end_list)
+
 if __name__ == '__main__': 
     app.run(debug=True)
+
+#CONCERNS
+#For APP, is it all, or just the last year?
+#
