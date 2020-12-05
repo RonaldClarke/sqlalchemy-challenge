@@ -58,10 +58,10 @@ def tobs():
 @app.route("/api/v1.0/<start>")
 def start(start):
     session = Session(engine)
-    results = session.query(Measurement.date, func.min(Measurement.tobs, func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date >= start).group_by(Measurement.date).all()
+    start_query = session.query(Measurement.date, func.min(Measurement.tobs, func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date >= start).group_by(Measurement.date).all()   
     session.close()
     start_list = []
-    for date, min, avg, max in results:
+    for date, min, avg, max in start_query:
         start_dict = {}
         start_dict["Date"] = date
         start_dict["TMIN"] = min
@@ -83,10 +83,5 @@ def temp_start_end(start, end):
         end_dict["TMAX"] = max
         end_list.append(start_dict)    
     return jsonify(end_list)
-
 if __name__ == '__main__': 
     app.run(debug=True)
-
-#CONCERNS
-#For APP, is it all, or just the last year?
-#
